@@ -1,7 +1,53 @@
-html, body {
+:root {
+  --color-bg: #d6d6d6;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fbfbfb;
+  --color-surface-empty: #f1f1f1;
+
+  --color-text: #000000;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #ddd;
+  --color-border-light: #e1e1e1;
+
+  --color-header: #181818;
+  --color-event-time: #262626;
+  --color-monthday: #eeeeee;
+
+  --shadow-calendar: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --shadow-container:
+    rgba(0, 0, 0, 0.1) 0 1px 3px 0,
+    rgba(0, 0, 0, 0.06) 0 1px 2px 0;
+
+  --radius-sm: 4px;
+
+  --font-family: system-ui, sans-serif;
+
+  --calendar-width: 297mm;
+  --calendar-height: 210mm;
+
+  --spacing-page: 20px;
+  --spacing-calendar-y: 3mm;
+  --spacing-calendar-x: 5mm;
+  --spacing-day: 1mm;
+
+  --weekday-height: 7mm;
+  --day-min-height: 20mm;
+
+  --font-size-weekday: 12px;
+  --font-size-day: 16px;
+  --font-size-event: 12px;
+  --font-size-event-time: 11px;
+  --font-size-month: 17px;
+
+  --line-height-event: 18px;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
-  background: #d6d6d6;
+  background: var(--color-bg);
 }
 
 body {
@@ -9,70 +55,83 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: var(--spacing-page);
   box-sizing: border-box;
 }
 
 .calendar {
-  font-family: system-ui, sans-serif;
-  width: 297mm;
-  height: 210mm;
-  background: white;
-  padding: 7mm;
-  box-sizing: border-box;
+  width: var(--calendar-width);
+  height: var(--calendar-height);
+  padding: var(--spacing-calendar-y) var(--spacing-calendar-x);
+
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+  box-sizing: border-box;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-calendar);
+
+  font-family: var(--font-family);
 }
 
-.container {}
+.container {
+  box-shadow: var(--shadow-container);
+}
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-right: 15px;
-  padding-left: 5px;
+
+  padding-inline: 5px 15px;
 }
 
 .monthday {
   display: flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid #e1e1e1;
+
+  padding: 3px 8px 2px;
+
+  border: 1px solid var(--color-border-light);
   border-bottom: 0;
-  padding: 3px 8px 2px 8px;
-  border-radius: 4px 4px 0 0px;
-  background-color: #eee;
-  color: #000;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+
+  background: var(--color-monthday);
+  color: var(--color-text);
 }
 
 .monthday h2 {
-  font-size: 21px;
-  font-weight: 600;
   margin: 0;
-  padding: 0;
+
+  font-size: var(--font-size-month);
+  font-weight: 600;
 }
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  height: 7mm;
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background-color: #181818;
-  color: #ffffff;
+
+  height: var(--weekday-height);
+
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+
+  background: var(--color-header);
+  color: var(--color-text-inverse);
 }
 
 .weekday {
   display: flex;
   align-items: center;
+
   padding-left: 10px;
+
+  border-right: 1px dashed var(--color-border);
+
+  font-size: var(--font-size-weekday);
   font-weight: 700;
-  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  border-right: 1px solid #e5e7eb;
 }
 
 .weekday:last-child {
@@ -81,75 +140,80 @@ body {
 
 .days {
   flex: 1;
+
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr;
-  border: 1px solid #e5e7eb;
+  grid-auto-rows: minmax(var(--day-min-height), auto);
+
+  border-top: 1px dashed var(--color-border);
+  border-left: 1px dashed var(--color-border);
 }
 
 .day {
-  border-right: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 1mm;
-  overflow: hidden;
-  background-color: #fbfbfb;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-}
 
-.day:nth-child(7n) {
-  border-right: none;
-}
+  padding: var(--spacing-day);
 
-.days .day:nth-last-child(-n + 7) {
-  border-bottom: none;
+  box-sizing: border-box;
+  border: 1px dashed var(--color-border);
+
+  background: var(--color-surface-muted);
 }
 
 .day.empty {
-  background-color: transparent;
+  background: var(--color-surface-empty);
 }
 
 .day-number {
+  margin-bottom: -5px;
+
+  color: var(--color-text);
+  font-size: var(--font-size-day);
   font-weight: 500;
-  font-size: 16px;
-  margin-bottom: 0;
-  color: #000;
   text-align: right;
 }
 
 .events {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .event {
-  margin: 1mm 0;
-  border-radius: 4px;
   display: flex;
   flex-wrap: wrap;
   column-gap: 3px;
-  word-break: break-word;
+
+  margin: 1mm 0;
+
+  border-radius: var(--radius-sm);
+
+  line-height: var(--line-height-event);
   white-space: normal;
-  line-height: 18px;
+  word-break: break-word;
 }
 
 .event-time {
-  font-weight: 600;
-  opacity: 0.9;
   flex-shrink: 0;
-  background-color: #262626;
-  color: #fff;
-  padding: 1px 3px 2px;
-  border-radius: 4px;
+
   margin-right: 3px;
-  font-size: 11px;
+  padding: 1px 3px 2px;
+
+  border-radius: var(--radius-sm);
+
+  background: var(--color-event-time);
+  color: var(--color-text-inverse);
+
+  font-size: var(--font-size-event-time);
+  font-weight: 600;
+
+  opacity: 0.9;
 }
 
 .event-title {
   flex: 1;
-  font-size: 12px;
+
+  font-size: var(--font-size-event);
 }
 
 @page {
@@ -158,13 +222,14 @@ body {
 }
 
 @media print {
-  html, body {
-    background: white;
+  html,
+  body {
+    background: var(--color-surface);
   }
 
   body {
-    padding: 0;
     min-height: auto;
+    padding: 0;
   }
 
   .header button {
@@ -172,8 +237,6 @@ body {
   }
 
   .calendar {
-    width: 297mm;
-    height: 210mm;
     box-shadow: none;
     page-break-inside: avoid;
   }
