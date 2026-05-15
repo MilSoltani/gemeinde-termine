@@ -14,11 +14,6 @@
   --color-event-time: #262626;
   --color-monthday: #eeeeee;
 
-  --shadow-calendar: 0 4px 10px rgba(0, 0, 0, 0.15);
-  --shadow-container:
-    rgba(0, 0, 0, 0.1) 0 1px 3px 0,
-    rgba(0, 0, 0, 0.06) 0 1px 2px 0;
-
   --radius-sm: 4px;
 
   --font-family: system-ui, sans-serif;
@@ -27,7 +22,7 @@
   --calendar-height: 210mm;
 
   --spacing-page: 20px;
-  --spacing-calendar-y: 3mm;
+  --spacing-calendar-y: 5mm;
   --spacing-calendar-x: 5mm;
   --spacing-day: 1mm;
 
@@ -53,21 +48,104 @@ body {
 body {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+
   min-height: 100vh;
+
   padding: var(--spacing-page);
+
   box-sizing: border-box;
 }
 
+.document {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page {
+  width: 297mm;
+  height: 210mm;
+
+  page-break-after: always;
+  break-after: page;
+}
+
+.title-page {
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 30mm;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  color: #181818;
+
+  font-family: var(--font-family);
+}
+
+.title-page::before {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+}
+
+.title-page img {
+  position: relative;
+
+  height: 90px;
+
+  margin-bottom: 20mm;
+}
+
+.title-page h1 {
+  position: relative;
+
+  margin: 0 0 10mm;
+
+  text-align: center;
+
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.title-page p {
+  position: relative;
+
+  margin: 0;
+  padding: 6mm 10mm;
+
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+
+  background: rgba(248, 248, 248, 0.95);
+
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
 .calendar {
-  width: var(--calendar-width);
-  height: var(--calendar-height);
+  min-height: var(--calendar-height);
+
   padding: var(--spacing-calendar-y) var(--spacing-calendar-x);
 
   display: flex;
   flex-direction: column;
 
   box-sizing: border-box;
+
   background: var(--color-surface);
   box-shadow: var(--shadow-calendar);
 
@@ -75,6 +153,11 @@ body {
 }
 
 .container {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
   box-shadow: var(--shadow-container);
 }
 
@@ -156,6 +239,7 @@ body {
   padding: var(--spacing-day);
 
   box-sizing: border-box;
+
   border: 1px dashed var(--color-border);
 
   background: var(--color-surface-muted);
@@ -169,6 +253,7 @@ body {
   margin-bottom: -5px;
 
   color: var(--color-text);
+
   font-size: var(--font-size-day);
   font-weight: 500;
   text-align: right;
@@ -189,6 +274,7 @@ body {
   border-radius: var(--radius-sm);
 
   line-height: var(--line-height-event);
+
   white-space: normal;
   word-break: break-word;
 }
@@ -232,12 +318,16 @@ body {
     padding: 0;
   }
 
-  .header button {
-    display: none;
+  .document {
+    gap: 0;
   }
 
-  .calendar {
+  .page {
+    margin: 0;
+  }
+
+  .calendar,
+  .title-page {
     box-shadow: none;
-    page-break-inside: avoid;
   }
 }

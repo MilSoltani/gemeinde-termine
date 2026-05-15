@@ -32,24 +32,19 @@ const events = ref([
   { id: 26, title: 'Familienbrunch', date: '2026-06-28', time: '10:30' },
 ])
 
-const currentDate = ref(new Date())
-
-const weekdays = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
-
-const currentYear = computed(() => currentDate.value.getFullYear())
-const currentMonth = computed(() => currentDate.value.getMonth())
-
-const monthName = computed(() =>
-  currentDate.value.toLocaleString('default', { month: 'long' }),
-)
+const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
 function formatDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-const calendarDays = computed(() => {
-  const year = currentYear.value
-  const month = currentMonth.value
+function createMonthData(baseDate: Date, offset: number) {
+  const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset, 1)
+
+  const year = date.getFullYear()
+  const month = date.getMonth()
+
+  const monthName = date.toLocaleString('de-DE', { month: 'long' })
 
   const firstDay = new Date(year, month, 1)
   const lastDay = new Date(year, month + 1, 0)
@@ -67,91 +62,118 @@ const calendarDays = computed(() => {
     if (dayNumber < 1 || dayNumber > daysInMonth) {
       days.push({
         empty: true,
-        date: `empty-${i}`,
+        date: `empty-${offset}-${i}`,
         day: '',
         events: [],
       })
     }
     else {
-      const date = formatDate(new Date(year, month, dayNumber))
+      const dateString = formatDate(new Date(year, month, dayNumber))
 
       const dayEvents = events.value
-        .filter(e => e.date === date)
+        .filter(e => e.date === dateString)
         .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
 
       days.push({
         empty: false,
-        date,
+        date: dateString,
         day: dayNumber,
         events: dayEvents,
       })
     }
   }
 
-  return days
+  return {
+    monthName,
+    year,
+    days,
+  }
+}
+
+const startYear = ref(2026)
+const startMonth = ref(5) // 0-based: 4 = May
+
+const monthCount = 2
+
+const months = computed(() => {
+  const base = new Date(startYear.value, startMonth.value, 1)
+
+  return Array.from({ length: monthCount }, (_, i) =>
+    createMonthData(base, i))
 })
-
-function prevMonth() {
-  currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1)
-}
-
-function nextMonth() {
-  currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1)
-}
 </script>
 
 <template>
-  <div class="calendar">
-    <div class="header">
-      <img src="/logo.svg" alt="FEG-Langenfeld" height="25px">
+  <div class="document">
+    <section class="title-page page">
+      <img src="/logo.svg" alt="Logo">
 
-      <div>
-        <button @click="prevMonth">
-          ‹
-        </button>
-        <button @click="nextMonth">
-          ›
-        </button>
-      </div>
+      <h1>Gemeindetermine</h1>
 
-      <div class="monthday">
-        Die Termine im <h2>{{ monthName }} {{ currentYear }}</h2>
-      </div>
-    </div>
+      <p>
+        {{ months[0]?.monthName }} {{ months[0]?.year }}
+        —
+        {{ months[1]?.monthName }} {{ months[1]?.year }}
+      </p>
+    </section>
 
-    <div class="container">
-      <div class="weekdays">
-        <div v-for="day in weekdays" :key="day" class="weekday">
-          {{ day }}
+    <section
+      v-for="(month, index) in months"
+      :key="index"
+      class="calendar page"
+    >
+      <div class="header">
+        <div />
+
+        <div class="monthday">
+          Die Termine im
+          <h2>{{ month.monthName }} {{ month.year }}</h2>
         </div>
       </div>
 
-      <div class="days">
-        <div
-          v-for="day in calendarDays"
-          :key="day.date"
-          class="day"
-          :class="{ empty: day.empty }"
-        >
-          <div class="day-number">
-            {{ day.day }}
+      <div class="container">
+        <div class="weekdays">
+          <div
+            v-for="day in weekdays"
+            :key="day"
+            class="weekday"
+          >
+            {{ day }}
           </div>
+        </div>
 
-          <div class="events">
-            <div v-for="event in day.events" :key="event.id" class="event">
-              <span class="event-title">
-                <span v-if="event.time" class="event-time">
-                  {{ event.time }}
+        <div class="days">
+          <div
+            v-for="day in month.days"
+            :key="day.date"
+            class="day"
+            :class="{ empty: day.empty }"
+          >
+            <div class="day-number">
+              {{ day.day }}
+            </div>
+
+            <div class="events">
+              <div
+                v-for="event in day.events"
+                :key="event.id"
+                class="event"
+              >
+                <span class="event-title">
+                  <span
+                    v-if="event.time"
+                    class="event-time"
+                  >
+                    {{ event.time }}
+                  </span>
+
+                  {{ event.title }}
                 </span>
-                {{ event.title }}
-              </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
-
-<style scoped>
-</style>
