@@ -15,6 +15,15 @@ const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Fr
 </script>
 
 <template>
+  <div class="header">
+    <div />
+
+    <div class="monthday">
+      Die Termine im
+      <h2>{{ month.monthName }} {{ month.year }}</h2>
+    </div>
+  </div>
+
   <div class="container">
     <div class="weekdays">
       <div
