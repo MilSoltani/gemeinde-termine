@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
+const showHelp = ref(false)
+
 interface EventItem {
   id: number
   title: string
@@ -206,7 +208,7 @@ function printCalendar() {
   <div class="document">
     <section class="crud">
       <div class="crud-column">
-        <h4>Kalender-Monate</h4>
+        <h4>Anfangsmonat auswählen:</h4>
 
         <div class="form">
           <input
@@ -240,7 +242,7 @@ function printCalendar() {
 
       <div class="crud-column">
         <h4>
-          {{ isEditing ? 'Termin bearbeiten' : 'Termin hinzufügen' }}
+          {{ isEditing ? 'Termin bearbeiten' : 'Termine hinzufügen' }}:
         </h4>
 
         <div class="form">
@@ -360,6 +362,97 @@ function printCalendar() {
         </div>
       </div>
     </section>
+  </div>
+
+  <button
+    class="help-button"
+    @click="showHelp = true"
+  >
+    🛈 Einleitung
+  </button>
+
+  <div
+    v-if="showHelp"
+    class="help-overlay"
+    @click.self="showHelp = false"
+  >
+    <div class="help-dialog">
+      <div class="help-header">
+        <h2>🛈 Einleitung</h2>
+
+        <button @click="showHelp = false">
+          ✕
+        </button>
+      </div>
+
+      <div class="help-content">
+        <div class="help-section">
+          <h3>Anfangsmonat auswählen</h3>
+
+          <p>
+            Der ausgewählte Monat bestimmt den sichtbaren Kalender.
+          </p>
+
+          <p>
+            Angezeigt werden immer der gewählte Monat und der Folgemonat.
+          </p>
+
+          <p>
+            Über „Drucken / PDF speichern“ kann der Kalender als PDF exportiert oder direkt gedruckt werden.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h3>Termin hinzufügen / bearbeiten</h3>
+
+          <p>
+            Titel, Datum und Uhrzeit eingeben und anschließend speichern.
+          </p>
+
+          <p>
+            Ein Klick auf einen bestehenden Termin lädt ihn zur Bearbeitung.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h3>Monat löschen</h3>
+
+          <p>
+            Entfernt alle Termine eines ausgewählten Monats dauerhaft.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h3>Automatische Speicherung</h3>
+
+          <p>
+            Alle Termine und Einstellungen werden automatisch im Browser gespeichert (LocalStorage).
+          </p>
+
+          <ul>
+            <li>
+              Daten bleiben nach dem Schließen des Tabs oder Browsers erhalten.
+            </li>
+
+            <li>
+              Speicherung gilt nur für dieses Gerät und diesen Browser.
+            </li>
+
+            <li>
+              Keine Synchronisation zwischen mehreren Geräten.
+            </li>
+
+            <li>
+              Löschen von Browserdaten entfernt auch alle Termine.
+            </li>
+
+            <li>
+              Daten sind nicht servergesichert und können verloren gehen (z. B. bei Cache-Leerung).
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
