@@ -1,45 +1,12 @@
 <script setup lang="ts">
 import type { EventItem } from './types'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import HelpDialog from './components/HelpDialog.vue'
+import { useCalendarStore } from './stores/useCalendarStore'
+import { useEventsStore } from './stores/useEventsStore'
 
-const EVENTS_STORAGE_KEY = 'calendar-events'
-const events = ref<EventItem[]>(loadEvents())
-
-function loadEvents(): EventItem[] {
-  const raw = localStorage.getItem(EVENTS_STORAGE_KEY)
-
-  if (!raw)
-    return []
-
-  try {
-    return JSON.parse(raw)
-  }
-  catch {
-    return []
-  }
-}
-
-watch(
-  events,
-  (value) => {
-    localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(value))
-  },
-  { deep: true },
-)
-
-const deleteMonth = ref('')
-
-function removeMonthEvents() {
-  if (!deleteMonth.value)
-    return
-
-  events.value = events.value.filter(
-    event => !event.date.startsWith(deleteMonth.value),
-  )
-
-  deleteMonth.value = ''
-}
+const eventsStore = useEventsStore()
+const calendarStore = useCalendarStore()
 
 const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
@@ -52,6 +19,8 @@ const form = ref({
 })
 
 const isEditing = computed(() => form.value.id !== null)
+
+const deleteMonth = ref('')
 
 function resetForm() {
   form.value = {
@@ -67,15 +36,7 @@ function addEvent() {
   if (!form.value.title || !form.value.date)
     return
 
-  const newEvent: EventItem = {
-    id: Date.now(),
-    title: form.value.title,
-    date: form.value.date,
-    time: form.value.time,
-    notes: form.value.notes,
-  }
-
-  events.value.push(newEvent)
+  eventsStore.createEventFromForm(form.value)
 
   resetForm()
 }
@@ -88,18 +49,13 @@ function updateEvent() {
   if (form.value.id === null)
     return
 
-  const index = events.value.findIndex(e => e.id === form.value.id)
-
-  if (index === -1)
-    return
-
-  events.value[index] = {
+  eventsStore.updateEvent({
     id: form.value.id,
     title: form.value.title,
     date: form.value.date,
     time: form.value.time,
     notes: form.value.notes,
-  }
+  })
 
   resetForm()
 }
@@ -108,122 +64,23 @@ function deleteEvent() {
   if (form.value.id === null)
     return
 
-  events.value = events.value.filter(e => e.id !== form.value.id)
+  eventsStore.deleteEvent(form.value.id)
 
   resetForm()
 }
 
-function formatDate(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+function removeMonthEvents() {
+  if (!deleteMonth.value)
+    return
 
-function getNotesForMonth(year: number, month: number) {
-  const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
-  const monthEvents = events.value.filter(e => e.date.startsWith(monthStr))
+  eventsStore.removeMonthEvents(deleteMonth.value)
 
-  const uniqueNotes: Map<string, number> = new Map()
-
-  monthEvents.forEach((event, index) => {
-    if (event.notes && !uniqueNotes.has(event.notes)) {
-      uniqueNotes.set(event.notes, index)
-    }
-  })
-
-  return Array.from(uniqueNotes.keys())
+  deleteMonth.value = ''
 }
 
 function getStarMarker(noteIndex: number): string {
   return '*'.repeat(noteIndex + 1)
 }
-
-function getEventNoteMarker(eventNotes: string | undefined, year: number, month: number): string {
-  if (!eventNotes)
-    return ''
-
-  const notes = getNotesForMonth(year, month)
-  const index = notes.indexOf(eventNotes)
-
-  return index >= 0 ? getStarMarker(index) : ''
-}
-
-function createMonthData(baseDate: Date, offset: number) {
-  const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset, 1)
-
-  const year = date.getFullYear()
-  const month = date.getMonth()
-
-  const monthName = date.toLocaleString('de-DE', { month: 'long' })
-
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-
-  const daysInMonth = lastDay.getDate()
-  const startDay = firstDay.getDay()
-
-  const totalCells = 42
-
-  const days: any[] = []
-
-  for (let i = 0; i < totalCells; i++) {
-    const dayNumber = i - startDay + 1
-
-    if (dayNumber < 1 || dayNumber > daysInMonth) {
-      days.push({
-        empty: true,
-        date: `empty-${offset}-${i}`,
-        day: '',
-        events: [],
-      })
-    }
-    else {
-      const dateString = formatDate(new Date(year, month, dayNumber))
-
-      const dayEvents = events.value
-        .filter(e => e.date === dateString)
-        .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
-
-      days.push({
-        empty: false,
-        date: dateString,
-        day: dayNumber,
-        events: dayEvents,
-      })
-    }
-  }
-
-  return {
-    monthName,
-    year,
-    month,
-    days,
-    notes: getNotesForMonth(year, month),
-  }
-}
-
-const MONTH_STORAGE_KEY = 'calendar-selected-month'
-const selectedMonth = ref(
-  localStorage.getItem(MONTH_STORAGE_KEY) || '2026-05',
-)
-watch(selectedMonth, (value) => {
-  localStorage.setItem(MONTH_STORAGE_KEY, value)
-})
-
-const startYear = computed(() => {
-  return Number(selectedMonth.value.split('-')[0])
-})
-
-const startMonth = computed(() => {
-  return Number(selectedMonth.value.split('-')[1]) - 1
-})
-
-const monthCount = 2
-
-const months = computed(() => {
-  const base = new Date(startYear.value, startMonth.value, 1)
-
-  return Array.from({ length: monthCount }, (_, i) =>
-    createMonthData(base, i))
-})
 
 function printCalendar() {
   window.print()
@@ -238,13 +95,13 @@ function printCalendar() {
 
         <div class="form">
           <input
-            v-model="selectedMonth"
+            v-model="calendarStore.selectedMonth"
             type="month"
           >
 
           <p class="selected-months">
             {{
-              new Date(startYear, startMonth)
+              new Date(calendarStore.startYear, calendarStore.startMonth)
                 .toLocaleString('de-DE', {
                   month: 'long',
                   year: 'numeric',
@@ -252,7 +109,7 @@ function printCalendar() {
             }}
             —
             {{
-              new Date(startYear, startMonth + 1)
+              new Date(calendarStore.startYear, calendarStore.startMonth + 1)
                 .toLocaleString('de-DE', {
                   month: 'long',
                   year: 'numeric',
@@ -336,7 +193,7 @@ function printCalendar() {
     </section>
 
     <section
-      v-for="(month, index) in months"
+      v-for="(month, index) in calendarStore.months"
       :key="index"
       class="calendar page"
     >
@@ -389,10 +246,10 @@ function printCalendar() {
                   {{ event.title }}
 
                   <span
-                    v-if="getEventNoteMarker(event.notes, month.year, month.month)"
+                    v-if="eventsStore.getEventNoteMarker(event.notes, month.year, month.month)"
                     class="event-marker"
                   >
-                    {{ getEventNoteMarker(event.notes, month.year, month.month) }}
+                    {{ eventsStore.getEventNoteMarker(event.notes, month.year, month.month) }}
                   </span>
                 </span>
               </div>
