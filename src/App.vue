@@ -1,14 +1,7 @@
 <script setup lang="ts">
+import type { EventItem } from './types'
 import { computed, ref, watch } from 'vue'
 import HelpDialog from './components/HelpDialog.vue'
-
-interface EventItem {
-  id: number
-  title: string
-  date: string
-  time: string
-  notes?: string
-}
 
 const EVENTS_STORAGE_KEY = 'calendar-events'
 const events = ref<EventItem[]>(loadEvents())
