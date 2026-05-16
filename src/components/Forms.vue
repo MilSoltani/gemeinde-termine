@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCalendarStore } from '@/stores/useCalendarStore'
 import { useFormStore } from '@/stores/useFormStore'
+import TimePicker from './TimePicker.vue'
 
 const calendarStore = useCalendarStore()
 const formStore = useFormStore()
@@ -62,10 +63,7 @@ function printCalendar() {
           type="date"
         >
 
-        <input
-          v-model="formStore.form.time"
-          type="time"
-        >
+        <TimePicker v-model="formStore.form.time" />
 
         <textarea
           v-model="formStore.form.notes"
