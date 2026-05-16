@@ -1,82 +1,14 @@
 <script setup lang="ts">
-import type { EventItem } from './types'
-import { computed, ref } from 'vue'
 import HelpDialog from './components/HelpDialog.vue'
 import { useCalendarStore } from './stores/useCalendarStore'
 import { useEventsStore } from './stores/useEventsStore'
+import { useFormStore } from './stores/useFormStore'
 
 const eventsStore = useEventsStore()
 const calendarStore = useCalendarStore()
+const formStore = useFormStore()
 
 const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
-
-const form = ref({
-  id: null as number | null,
-  title: '',
-  date: '',
-  time: '',
-  notes: '',
-})
-
-const isEditing = computed(() => form.value.id !== null)
-
-const deleteMonth = ref('')
-
-function resetForm() {
-  form.value = {
-    id: null,
-    title: '',
-    date: '',
-    time: '',
-    notes: '',
-  }
-}
-
-function addEvent() {
-  if (!form.value.title || !form.value.date)
-    return
-
-  eventsStore.createEventFromForm(form.value)
-
-  resetForm()
-}
-
-function selectEvent(event: EventItem) {
-  form.value = { ...event, notes: event.notes || '' }
-}
-
-function updateEvent() {
-  if (form.value.id === null)
-    return
-
-  eventsStore.updateEvent({
-    id: form.value.id,
-    title: form.value.title,
-    date: form.value.date,
-    time: form.value.time,
-    notes: form.value.notes,
-  })
-
-  resetForm()
-}
-
-function deleteEvent() {
-  if (form.value.id === null)
-    return
-
-  eventsStore.deleteEvent(form.value.id)
-
-  resetForm()
-}
-
-function removeMonthEvents() {
-  if (!deleteMonth.value)
-    return
-
-  eventsStore.removeMonthEvents(deleteMonth.value)
-
-  deleteMonth.value = ''
-}
 
 function getStarMarker(noteIndex: number): string {
   return '*'.repeat(noteIndex + 1)
@@ -125,50 +57,50 @@ function printCalendar() {
 
       <div class="crud-column">
         <h4>
-          {{ isEditing ? 'Termin bearbeiten' : 'Termine hinzufügen' }}:
+          {{ formStore.isEditing ? 'Termin bearbeiten' : 'Termine hinzufügen' }}:
         </h4>
 
         <div class="form">
           <input
-            v-model="form.title"
+            v-model="formStore.form.title"
             type="text"
             placeholder="Titel"
           >
 
           <input
-            v-model="form.date"
+            v-model="formStore.form.date"
             type="date"
           >
 
           <input
-            v-model="form.time"
+            v-model="formStore.form.time"
             type="time"
           >
 
           <textarea
-            v-model="form.notes"
+            v-model="formStore.form.notes"
             placeholder="Notizen (optional)"
             rows="3"
           />
 
           <div class="buttons">
             <button
-              v-if="!isEditing"
-              @click="addEvent"
+              v-if="!formStore.isEditing"
+              @click="formStore.addEvent"
             >
               Hinzufügen
             </button>
 
             <template v-else>
-              <button @click="updateEvent">
+              <button @click="formStore.updateEvent">
                 Aktualisieren
               </button>
 
-              <button @click="deleteEvent">
+              <button @click="formStore.deleteEvent">
                 Löschen
               </button>
 
-              <button @click="resetForm">
+              <button @click="formStore.resetForm">
                 Abbrechen
               </button>
             </template>
@@ -181,11 +113,11 @@ function printCalendar() {
 
         <div class="form">
           <input
-            v-model="deleteMonth"
+            v-model="formStore.deleteMonth"
             type="month"
           >
 
-          <button @click="removeMonthEvents">
+          <button @click="formStore.removeMonthEvents">
             Alle Termine des Monats löschen
           </button>
         </div>
@@ -233,7 +165,7 @@ function printCalendar() {
                 v-for="event in day.events"
                 :key="event.id"
                 class="event"
-                @click="selectEvent(event)"
+                @click="formStore.selectEvent(event)"
               >
                 <span class="event-title">
                   <span
