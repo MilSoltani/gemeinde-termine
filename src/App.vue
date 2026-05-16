@@ -8,6 +8,7 @@ interface EventItem {
   title: string
   date: string
   time: string
+  notes?: string
 }
 
 const EVENTS_STORAGE_KEY = 'calendar-events'
@@ -57,6 +58,7 @@ const form = ref({
   title: '',
   date: '',
   time: '',
+  notes: '',
 })
 
 const isEditing = computed(() => form.value.id !== null)
@@ -67,6 +69,7 @@ function resetForm() {
     title: '',
     date: '',
     time: '',
+    notes: '',
   }
 }
 
@@ -79,6 +82,7 @@ function addEvent() {
     title: form.value.title,
     date: form.value.date,
     time: form.value.time,
+    notes: form.value.notes,
   }
 
   events.value.push(newEvent)
@@ -87,7 +91,7 @@ function addEvent() {
 }
 
 function selectEvent(event: EventItem) {
-  form.value = { ...event }
+  form.value = { ...event, notes: event.notes || '' }
 }
 
 function updateEvent() {
@@ -104,6 +108,7 @@ function updateEvent() {
     title: form.value.title,
     date: form.value.date,
     time: form.value.time,
+    notes: form.value.notes,
   }
 
   resetForm()
@@ -120,6 +125,35 @@ function deleteEvent() {
 
 function formatDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function getNotesForMonth(year: number, month: number) {
+  const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
+  const monthEvents = events.value.filter(e => e.date.startsWith(monthStr))
+
+  const uniqueNotes: Map<string, number> = new Map()
+
+  monthEvents.forEach((event, index) => {
+    if (event.notes && !uniqueNotes.has(event.notes)) {
+      uniqueNotes.set(event.notes, index)
+    }
+  })
+
+  return Array.from(uniqueNotes.keys())
+}
+
+function getStarMarker(noteIndex: number): string {
+  return '*'.repeat(noteIndex + 1)
+}
+
+function getEventNoteMarker(eventNotes: string | undefined, year: number, month: number): string {
+  if (!eventNotes)
+    return ''
+
+  const notes = getNotesForMonth(year, month)
+  const index = notes.indexOf(eventNotes)
+
+  return index >= 0 ? getStarMarker(index) : ''
 }
 
 function createMonthData(baseDate: Date, offset: number) {
@@ -170,7 +204,9 @@ function createMonthData(baseDate: Date, offset: number) {
   return {
     monthName,
     year,
+    month,
     days,
+    notes: getNotesForMonth(year, month),
   }
 }
 
@@ -261,6 +297,12 @@ function printCalendar() {
             v-model="form.time"
             type="time"
           >
+
+          <textarea
+            v-model="form.notes"
+            placeholder="Notizen (optional)"
+            rows="3"
+          />
 
           <div class="buttons">
             <button
@@ -355,9 +397,32 @@ function printCalendar() {
                   </span>
 
                   {{ event.title }}
+
+                  <span
+                    v-if="getEventNoteMarker(event.notes, month.year, month.month)"
+                    class="event-marker"
+                  >
+                    {{ getEventNoteMarker(event.notes, month.year, month.month) }}
+                  </span>
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="month.notes.length > 0"
+        class="notes-section"
+      >
+        <div class="notes-list">
+          <div
+            v-for="(note, index2) in month.notes"
+            :key="index2"
+            class="note-item"
+          >
+            <span class="note-marker">{{ getStarMarker(index2) }}</span>
+            <span class="note-text">{{ note }}</span>
           </div>
         </div>
       </div>
@@ -411,6 +476,26 @@ function printCalendar() {
 
           <p>
             Ein Klick auf einen bestehenden Termin lädt ihn zur Bearbeitung.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h3>Notizen zu Terminen</h3>
+
+          <p>
+            Zu jedem Termin können optionale Notizen gespeichert werden.
+          </p>
+
+          <p>
+            Diese Notizen erscheinen nicht im Kalender-Tag selbst, sondern nur als Referenzmarkierung im Monatsbereich.
+          </p>
+
+          <p>
+            Gleiche Notizen werden im jeweiligen Monat gruppiert und unten als Übersicht angezeigt.
+          </p>
+
+          <p>
+            Im Kalender werden sie mit Stern-Symbolen (*) markiert, um die Zuordnung zu erleichtern.
           </p>
         </div>
 
