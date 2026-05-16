@@ -29,3 +29,40 @@ function getStarMarker(noteIndex: number): string {
     </div>
   </div>
 </template>
+
+<style scoped>
+.notes-section {
+  font-size: 11px;
+  padding: 5px 5px 0 5px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.note-item {
+  display: flex;
+  gap: 8px;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.note-marker {
+  flex-shrink: 0;
+
+  font-weight: 700;
+  font-size: 12px;
+
+  color: var(--color-text);
+}
+
+.note-text {
+  flex: 1;
+
+  word-break: break-word;
+  white-space: normal;
+}
+</style>

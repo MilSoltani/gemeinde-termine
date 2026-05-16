@@ -15,7 +15,7 @@ const calendarStore = useCalendarStore()
     <section
       v-for="(month, index) in calendarStore.months"
       :key="index"
-      class="calendar page"
+      class="page"
     >
       <Calendar :month="month" />
       <Notes :month="month" />

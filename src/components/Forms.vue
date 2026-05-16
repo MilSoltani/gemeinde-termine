@@ -114,3 +114,49 @@ function printCalendar() {
     </div>
   </section>
 </template>
+
+<style scoped>
+.crud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.crud-column {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+textarea {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+@media print {
+  .crud {
+    display: none !important;
+  }
+}
+</style>
