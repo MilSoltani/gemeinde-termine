@@ -15,6 +15,11 @@ export const useFormStore = defineStore('form', () => {
   })
 
   const isEditing = computed(() => form.value.id !== null)
+  const canSubmit = computed(() => {
+    return !!form.value.title
+      && !!form.value.date
+      && !!form.value.time
+  })
 
   const deleteMonth = ref('')
 
@@ -84,5 +89,6 @@ export const useFormStore = defineStore('form', () => {
     updateEvent,
     deleteEvent,
     removeMonthEvents,
+    canSubmit,
   }
 })

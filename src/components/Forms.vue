@@ -74,13 +74,14 @@ function printCalendar() {
         <div class="buttons">
           <button
             v-if="!formStore.isEditing"
+            :disabled="!formStore.canSubmit"
             @click="formStore.addEvent"
           >
             Hinzufügen
           </button>
 
           <template v-else>
-            <button @click="formStore.updateEvent">
+            <button :disabled="!formStore.canSubmit" @click="formStore.updateEvent">
               Aktualisieren
             </button>
 
@@ -140,6 +141,11 @@ function printCalendar() {
   gap: 0.5rem;
 }
 
+button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 input,
 textarea,
 button {
@@ -152,6 +158,7 @@ textarea {
   border-radius: var(--radius-sm);
   resize: vertical;
 }
+
 @media print {
   .crud {
     display: none !important;
