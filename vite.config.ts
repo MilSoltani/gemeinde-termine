@@ -10,5 +10,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: '/your-repo-name/',
+  base: '/gemeinde-kalendar',
 })
