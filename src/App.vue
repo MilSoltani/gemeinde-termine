@@ -1,38 +1,82 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-const events = ref([
-  { id: 1, title: 'Team Meeting', date: '2026-05-05', time: '10:00' },
-  { id: 2, title: 'Doctor Appointment bei Dr Höcke in Krankenhaus', date: '2026-05-12', time: '09:00' },
-  { id: 3, title: 'Birthday Party bei Dr Höcke in Krankenhaus', date: '2026-05-12', time: '18:30' },
-  { id: 4, title: 'Birthday Party bei Dr Höcke in Krankenhaus', date: '2026-05-12', time: '18:30' },
-  { id: 5, title: 'Bibel lesen - Bibel leben', date: '2026-05-20', time: '14:00' },
-  { id: 6, title: 'Gottesdienst Stefanie Koch / Heike Schilbach', date: '2026-05-03', time: '10:00' },
-  { id: 7, title: 'Gemeindeforum', date: '2026-05-03', time: '12:30' },
-  { id: 8, title: 'Gottesdienst Abendmahl Stefanie Koch / Heike Schilbach', date: '2026-05-10', time: '10:00' },
-  { id: 9, title: 'Cafe International', date: '2026-05-21', time: '15:00' },
+interface EventItem {
+  id: number
+  title: string
+  date: string
+  time: string
+}
 
-  { id: 10, title: 'Jugendkreis', date: '2026-05-08', time: '19:00' },
-  { id: 11, title: 'Elternabend Schule', date: '2026-05-14', time: '18:00' },
-  { id: 12, title: 'Lobpreisabend', date: '2026-05-16', time: '20:00' },
-  { id: 13, title: 'Seniorencafé', date: '2026-05-18', time: '15:30' },
-  { id: 14, title: 'Projektbesprechung', date: '2026-05-22', time: '11:00' },
-  { id: 15, title: 'Männerfrühstück', date: '2026-05-23', time: '08:30' },
-  { id: 16, title: 'Kinderchor Probe', date: '2026-05-27', time: '16:00' },
-  { id: 17, title: 'Open-Air Gottesdienst', date: '2026-05-31', time: '11:00' },
-
-  { id: 18, title: 'Sommerfest Planung', date: '2026-06-02', time: '17:30' },
-  { id: 19, title: 'Bibelkreis', date: '2026-06-04', time: '19:00' },
-  { id: 20, title: 'Arzttermin Zahnarztpraxis Müller', date: '2026-06-09', time: '08:15' },
-  { id: 21, title: 'Team Lunch', date: '2026-06-11', time: '12:00' },
-  { id: 22, title: 'Jugendgottesdienst', date: '2026-06-14', time: '18:00' },
-  { id: 23, title: 'Wandertag Taunus', date: '2026-06-18', time: '09:00' },
-  { id: 24, title: 'Sommerkonzert Gemeinde', date: '2026-06-20', time: '19:30' },
-  { id: 25, title: 'Gebetsabend', date: '2026-06-24', time: '20:00' },
-  { id: 26, title: 'Familienbrunch', date: '2026-06-28', time: '10:30' },
-])
+const events = ref<EventItem[]>([])
 
 const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
+
+const form = ref({
+  id: null as number | null,
+  title: '',
+  date: '',
+  time: '',
+})
+
+const isEditing = computed(() => form.value.id !== null)
+
+function resetForm() {
+  form.value = {
+    id: null,
+    title: '',
+    date: '',
+    time: '',
+  }
+}
+
+function addEvent() {
+  if (!form.value.title || !form.value.date)
+    return
+
+  const newEvent: EventItem = {
+    id: Date.now(),
+    title: form.value.title,
+    date: form.value.date,
+    time: form.value.time,
+  }
+
+  events.value.push(newEvent)
+
+  resetForm()
+}
+
+function selectEvent(event: EventItem) {
+  form.value = { ...event }
+}
+
+function updateEvent() {
+  if (form.value.id === null)
+    return
+
+  const index = events.value.findIndex(e => e.id === form.value.id)
+
+  if (index === -1)
+    return
+
+  events.value[index] = {
+    id: form.value.id,
+    title: form.value.title,
+    date: form.value.date,
+    time: form.value.time,
+  }
+
+  resetForm()
+}
+
+function deleteEvent() {
+  if (form.value.id === null)
+    return
+
+  events.value = events.value.filter(e => e.id !== form.value.id)
+
+  resetForm()
+}
 
 function formatDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -91,7 +135,7 @@ function createMonthData(baseDate: Date, offset: number) {
 }
 
 const startYear = ref(2026)
-const startMonth = ref(5) // 0-based: 4 = May
+const startMonth = ref(4)
 
 const monthCount = 2
 
@@ -105,9 +149,54 @@ const months = computed(() => {
 
 <template>
   <div class="document">
-    <section class="title-page page">
-      <img src="/logo.svg" alt="Logo">
+    <section class="crud">
+      <h2>
+        {{ isEditing ? 'Termin bearbeiten' : 'Termin hinzufügen' }}
+      </h2>
 
+      <div class="form">
+        <input
+          v-model="form.title"
+          type="text"
+          placeholder="Titel"
+        >
+
+        <input
+          v-model="form.date"
+          type="date"
+        >
+
+        <input
+          v-model="form.time"
+          type="time"
+        >
+
+        <div class="buttons">
+          <button
+            v-if="!isEditing"
+            @click="addEvent"
+          >
+            Hinzufügen
+          </button>
+
+          <template v-else>
+            <button @click="updateEvent">
+              Aktualisieren
+            </button>
+
+            <button @click="deleteEvent">
+              Löschen
+            </button>
+
+            <button @click="resetForm">
+              Abbrechen
+            </button>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <section class="title-page page">
       <h1>Gemeindetermine</h1>
 
       <p>
@@ -158,6 +247,7 @@ const months = computed(() => {
                 v-for="event in day.events"
                 :key="event.id"
                 class="event"
+                @click="selectEvent(event)"
               >
                 <span class="event-title">
                   <span
@@ -177,3 +267,6 @@ const months = computed(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+</style>
