@@ -12,6 +12,16 @@ const eventsStore = useEventsStore()
 const formStore = useFormStore()
 
 const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
+
+function selectDay(day: any) {
+  if (!day.empty) {
+    formStore.form.date = day.date
+  }
+}
+
+function isDateSelected(date: string) {
+  return formStore.form.date === date
+}
 </script>
 
 <template>
@@ -40,7 +50,8 @@ const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Fr
         v-for="day in props.month.days"
         :key="day.date"
         class="day"
-        :class="{ empty: day.empty }"
+        :class="{ empty: day.empty, selected: isDateSelected(day.date) }"
+        @click="selectDay(day)"
       >
         <div class="day-number">
           {{ day.day }}
@@ -51,7 +62,7 @@ const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Fr
             v-for="event in day.events"
             :key="event.id"
             class="event"
-            @click="formStore.selectEvent(event)"
+            @click.stop="formStore.selectEvent(event)"
           >
             <span class="event-title">
               <span
@@ -155,6 +166,10 @@ const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Fr
 
 .day.empty {
   background: var(--color-surface-empty);
+}
+
+.day.selected {
+  background: #e3f2fd;
 }
 
 .day-number {
