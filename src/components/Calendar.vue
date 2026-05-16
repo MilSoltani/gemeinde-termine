@@ -26,10 +26,10 @@ function isDateSelected(date: string) {
 
 <template>
   <div class="header">
-    <div />
+    <img class="logo" src="/logo.svg" alt="FEG-Langenfeld" height="24px">
 
     <div class="monthday">
-      Die Termine im
+      Die Gemeindetermine im
       <h2>{{ month.monthName }} {{ month.year }}</h2>
     </div>
   </div>
@@ -101,6 +101,10 @@ function isDateSelected(date: string) {
   justify-content: space-between;
   align-items: baseline;
   padding-inline: 5px 15px;
+}
+
+.logo {
+  padding-left: 15px
 }
 
 .monthday {
