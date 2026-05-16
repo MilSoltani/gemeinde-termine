@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-
-const showHelp = ref(false)
+import HelpDialog from './components/HelpDialog.vue'
 
 interface EventItem {
   id: number
@@ -12,8 +11,6 @@ interface EventItem {
 }
 
 const EVENTS_STORAGE_KEY = 'calendar-events'
-const MONTH_STORAGE_KEY = 'calendar-selected-month'
-
 const events = ref<EventItem[]>(loadEvents())
 
 function loadEvents(): EventItem[] {
@@ -210,10 +207,10 @@ function createMonthData(baseDate: Date, offset: number) {
   }
 }
 
+const MONTH_STORAGE_KEY = 'calendar-selected-month'
 const selectedMonth = ref(
   localStorage.getItem(MONTH_STORAGE_KEY) || '2026-05',
 )
-
 watch(selectedMonth, (value) => {
   localStorage.setItem(MONTH_STORAGE_KEY, value)
 })
@@ -429,116 +426,7 @@ function printCalendar() {
     </section>
   </div>
 
-  <button
-    class="help-button"
-    @click="showHelp = true"
-  >
-    🛈 Einleitung
-  </button>
-
-  <div
-    v-if="showHelp"
-    class="help-overlay"
-    @click.self="showHelp = false"
-  >
-    <div class="help-dialog">
-      <div class="help-header">
-        <h2>🛈 Einleitung</h2>
-
-        <button @click="showHelp = false">
-          ✕
-        </button>
-      </div>
-
-      <div class="help-content">
-        <div class="help-section">
-          <h3>Anfangsmonat auswählen</h3>
-
-          <p>
-            Der ausgewählte Monat bestimmt den sichtbaren Kalender.
-          </p>
-
-          <p>
-            Angezeigt werden immer der gewählte Monat und der Folgemonat.
-          </p>
-
-          <p>
-            Über „Drucken / PDF speichern“ kann der Kalender als PDF exportiert oder direkt gedruckt werden.
-          </p>
-        </div>
-
-        <div class="help-section">
-          <h3>Termin hinzufügen / bearbeiten</h3>
-
-          <p>
-            Titel, Datum und Uhrzeit eingeben und anschließend speichern.
-          </p>
-
-          <p>
-            Ein Klick auf einen bestehenden Termin lädt ihn zur Bearbeitung.
-          </p>
-        </div>
-
-        <div class="help-section">
-          <h3>Notizen zu Terminen</h3>
-
-          <p>
-            Zu jedem Termin können optionale Notizen gespeichert werden.
-          </p>
-
-          <p>
-            Diese Notizen erscheinen nicht im Kalender-Tag selbst, sondern nur als Referenzmarkierung im Monatsbereich.
-          </p>
-
-          <p>
-            Gleiche Notizen werden im jeweiligen Monat gruppiert und unten als Übersicht angezeigt.
-          </p>
-
-          <p>
-            Im Kalender werden sie mit Stern-Symbolen (*) markiert, um die Zuordnung zu erleichtern.
-          </p>
-        </div>
-
-        <div class="help-section">
-          <h3>Monat löschen</h3>
-
-          <p>
-            Entfernt alle Termine eines ausgewählten Monats dauerhaft.
-          </p>
-        </div>
-
-        <div class="help-section">
-          <h3>Automatische Speicherung</h3>
-
-          <p>
-            Alle Termine und Einstellungen werden automatisch im Browser gespeichert (LocalStorage).
-          </p>
-
-          <ul>
-            <li>
-              Daten bleiben nach dem Schließen des Tabs oder Browsers erhalten.
-            </li>
-
-            <li>
-              Speicherung gilt nur für dieses Gerät und diesen Browser.
-            </li>
-
-            <li>
-              Keine Synchronisation zwischen mehreren Geräten.
-            </li>
-
-            <li>
-              Löschen von Browserdaten entfernt auch alle Termine.
-            </li>
-
-            <li>
-              Daten sind nicht servergesichert und können verloren gehen (z. B. bei Cache-Leerung).
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+  <HelpDialog />
 </template>
 
 <style scoped>
