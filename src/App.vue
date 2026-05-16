@@ -8,12 +8,13 @@ interface EventItem {
   time: string
 }
 
-const STORAGE_KEY = 'calendar-events'
+const EVENTS_STORAGE_KEY = 'calendar-events'
+const MONTH_STORAGE_KEY = 'calendar-selected-month'
 
 const events = ref<EventItem[]>(loadEvents())
 
 function loadEvents(): EventItem[] {
-  const raw = localStorage.getItem(STORAGE_KEY)
+  const raw = localStorage.getItem(EVENTS_STORAGE_KEY)
 
   if (!raw)
     return []
@@ -29,7 +30,7 @@ function loadEvents(): EventItem[] {
 watch(
   events,
   (value) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+    localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(value))
   },
   { deep: true },
 )
@@ -171,8 +172,21 @@ function createMonthData(baseDate: Date, offset: number) {
   }
 }
 
-const startYear = ref(2026)
-const startMonth = ref(4)
+const selectedMonth = ref(
+  localStorage.getItem(MONTH_STORAGE_KEY) || '2026-05',
+)
+
+watch(selectedMonth, (value) => {
+  localStorage.setItem(MONTH_STORAGE_KEY, value)
+})
+
+const startYear = computed(() => {
+  return Number(selectedMonth.value.split('-')[0])
+})
+
+const startMonth = computed(() => {
+  return Number(selectedMonth.value.split('-')[1]) - 1
+})
 
 const monthCount = 2
 
@@ -182,25 +196,52 @@ const months = computed(() => {
   return Array.from({ length: monthCount }, (_, i) =>
     createMonthData(base, i))
 })
+
+function printCalendar() {
+  window.print()
+}
 </script>
 
 <template>
   <div class="document">
-    <section class="title-page page">
-      <h1>Gemeindetermine</h1>
-
-      <p>
-        {{ months[0]?.monthName }} {{ months[0]?.year }}
-        —
-        {{ months[1]?.monthName }} {{ months[1]?.year }}
-      </p>
-    </section>
-
     <section class="crud">
       <div class="crud-column">
-        <h2>
+        <h4>Kalender-Monate</h4>
+
+        <div class="form">
+          <input
+            v-model="selectedMonth"
+            type="month"
+          >
+
+          <p class="selected-months">
+            {{
+              new Date(startYear, startMonth)
+                .toLocaleString('de-DE', {
+                  month: 'long',
+                  year: 'numeric',
+                })
+            }}
+            —
+            {{
+              new Date(startYear, startMonth + 1)
+                .toLocaleString('de-DE', {
+                  month: 'long',
+                  year: 'numeric',
+                })
+            }}
+          </p>
+
+          <button @click="printCalendar">
+            Drucken / PDF speichern
+          </button>
+        </div>
+      </div>
+
+      <div class="crud-column">
+        <h4>
           {{ isEditing ? 'Termin bearbeiten' : 'Termin hinzufügen' }}
-        </h2>
+        </h4>
 
         <div class="form">
           <input
@@ -245,7 +286,7 @@ const months = computed(() => {
       </div>
 
       <div class="crud-column">
-        <h3>Monat löschen</h3>
+        <h4>Monatstermine löschen</h4>
 
         <div class="form">
           <input
