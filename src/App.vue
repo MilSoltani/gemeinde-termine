@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 interface EventItem {
   id: number
@@ -8,7 +8,44 @@ interface EventItem {
   time: string
 }
 
-const events = ref<EventItem[]>([])
+const STORAGE_KEY = 'calendar-events'
+
+const events = ref<EventItem[]>(loadEvents())
+
+function loadEvents(): EventItem[] {
+  const raw = localStorage.getItem(STORAGE_KEY)
+
+  if (!raw)
+    return []
+
+  try {
+    return JSON.parse(raw)
+  }
+  catch {
+    return []
+  }
+}
+
+watch(
+  events,
+  (value) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+  },
+  { deep: true },
+)
+
+const deleteMonth = ref('')
+
+function removeMonthEvents() {
+  if (!deleteMonth.value)
+    return
+
+  events.value = events.value.filter(
+    event => !event.date.startsWith(deleteMonth.value),
+  )
+
+  deleteMonth.value = ''
+}
 
 const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
@@ -149,53 +186,6 @@ const months = computed(() => {
 
 <template>
   <div class="document">
-    <section class="crud">
-      <h2>
-        {{ isEditing ? 'Termin bearbeiten' : 'Termin hinzufügen' }}
-      </h2>
-
-      <div class="form">
-        <input
-          v-model="form.title"
-          type="text"
-          placeholder="Titel"
-        >
-
-        <input
-          v-model="form.date"
-          type="date"
-        >
-
-        <input
-          v-model="form.time"
-          type="time"
-        >
-
-        <div class="buttons">
-          <button
-            v-if="!isEditing"
-            @click="addEvent"
-          >
-            Hinzufügen
-          </button>
-
-          <template v-else>
-            <button @click="updateEvent">
-              Aktualisieren
-            </button>
-
-            <button @click="deleteEvent">
-              Löschen
-            </button>
-
-            <button @click="resetForm">
-              Abbrechen
-            </button>
-          </template>
-        </div>
-      </div>
-    </section>
-
     <section class="title-page page">
       <h1>Gemeindetermine</h1>
 
@@ -204,6 +194,70 @@ const months = computed(() => {
         —
         {{ months[1]?.monthName }} {{ months[1]?.year }}
       </p>
+    </section>
+
+    <section class="crud">
+      <div class="crud-column">
+        <h2>
+          {{ isEditing ? 'Termin bearbeiten' : 'Termin hinzufügen' }}
+        </h2>
+
+        <div class="form">
+          <input
+            v-model="form.title"
+            type="text"
+            placeholder="Titel"
+          >
+
+          <input
+            v-model="form.date"
+            type="date"
+          >
+
+          <input
+            v-model="form.time"
+            type="time"
+          >
+
+          <div class="buttons">
+            <button
+              v-if="!isEditing"
+              @click="addEvent"
+            >
+              Hinzufügen
+            </button>
+
+            <template v-else>
+              <button @click="updateEvent">
+                Aktualisieren
+              </button>
+
+              <button @click="deleteEvent">
+                Löschen
+              </button>
+
+              <button @click="resetForm">
+                Abbrechen
+              </button>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="crud-column">
+        <h3>Monat löschen</h3>
+
+        <div class="form">
+          <input
+            v-model="deleteMonth"
+            type="month"
+          >
+
+          <button @click="removeMonthEvents">
+            Alle Termine des Monats löschen
+          </button>
+        </div>
+      </div>
     </section>
 
     <section

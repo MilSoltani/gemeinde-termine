@@ -333,27 +333,40 @@ body {
 }
 
 .crud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+
   margin-bottom: 2rem;
 }
 
-@media print {
-  .crud {
-    display: none !important;
-  }
+.crud-column {
+  padding: 1rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+
+  background: var(--color-surface);
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-width: 400px;
 }
 
 .buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .event {
   cursor: pointer;
+}
+
+@media print {
+  .crud {
+    display: none !important;
+  }
 }
